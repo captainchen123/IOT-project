@@ -1,0 +1,208 @@
+# import libraries
+import pandas as pd
+# this is only for Mac users
+# import matplotlib
+# matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+
+# remove unwanted substrings from date column, append data from wanted date to date
+# and noiseLevel lists
+def handle_data(date_col, noise_col, day):
+    index = 0
+    dates_list = []
+    noiseLevel_list = []
+    mean_list = []
+    counter = 0
+    prev_hour = None
+    hourly_sum = 0
+    hourly_mean = 0
+
+    for time in date_col:
+        date_col[index] = date_col[index].replace("T", " ")
+        date_col[index] = date_col[index].replace("Z", "")
+        if (day in str(date_col[index])):
+            date_col[index] = date_col[index][:-3]
+            date = datetime.strptime(date_col[index], "%Y-%m-%d %H:%M")
+            dates_list.append(date)
+            noiseLevel_list.append(noise_col[index])
+
+            curr_hour = str(date)
+            curr_hour = curr_hour[11:13]
+
+            if prev_hour is None:
+                prev_hour = curr_hour
+            if prev_hour == curr_hour:
+                counter += 1
+                hourly_sum += noise_col[index]
+            else:
+                hourly_mean = hourly_sum / counter
+                mean_list.append(hourly_mean)
+                hourly_sum = 0
+                counter = 0
+                prev_hour = None
+
+        index += 1
+    return dates_list, noiseLevel_list, mean_list
+
+
+# plot graph
+def plot_graph(dates_list, noiseLevel_list, day):
+    plt.figure(figsize=(15, 5))
+    plt.plot(dates_list, noiseLevel_list, color='black', linestyle='-', linewidth=0.2)
+    plt.title(f"Noise level data from {day} (24 h)", fontweight='bold', fontsize=30)
+    plt.ylabel("Noise level (dB)", fontweight='bold', fontsize=18)
+    plt.xlabel("Time (hours)", fontweight='bold', fontsize=18)
+    plt.grid(True)
+    plt.show()
+
+
+# plot mean 
+def plot_mean(hours, mean, day):
+    plt.figure(figsize=(10, 5))
+    plt.plot(hours, mean, color='red', linestyle='-', linewidth=2)
+    plt.title(f"Mean noise level {day} (24 h)", fontweight='bold', fontsize=30)
+    plt.ylabel("Noise level", fontsize=18)
+    plt.xlabel("Time", fontsize=18)
+    plt.xlim(0, 23)
+    plt.grid(True)
+    plt.show()
+
+
+# read .csv-file and get required data columns
+noiseL = pd.read_csv(
+    "LAeq-2020-all.csv",
+    dayfirst=True, sep=",",
+    header=0, decimal=b".", index_col=0, usecols=[0, 1, 2])
+date_col = noiseL.iloc[:, 0].values
+noise_col = noiseL.iloc[:, 1].values
+
+hours_in_day = []
+for hour in range(23):
+    hours_in_day.append(hour)
+
+# first day
+day = "2020-02-01"
+dates_list, noiseLevel_list, mean_list = handle_data(date_col, noise_col, day)
+plot_graph(dates_list, noiseLevel_list, day)
+plot_mean(hours_in_day, mean_list, day)
+
+# second day
+day = "2020-02-02"
+dates_list1, noiseLevel_list1, mean_list1 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list1, noiseLevel_list1, day)
+plot_mean(hours_in_day, mean_list1, day)
+
+# second day
+day = "2020-02-03"
+dates_list2, noiseLevel_list2, mean_list2 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list2, noiseLevel_list2, day)
+plot_mean(hours_in_day, mean_list2, day)
+
+# fourth day
+day = "2020-02-04"
+dates_list3, noiseLevel_list3, mean_list3 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list3, noiseLevel_list3, day)
+plot_mean(hours_in_day, mean_list3, day)
+
+# fifth day
+day = "2020-02-05"
+dates_list4, noiseLevel_list4, mean_list4 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list4, noiseLevel_list4, day)
+plot_mean(hours_in_day, mean_list4, day)
+
+# sixth day
+day = "2020-02-06"
+dates_list5, noiseLevel_list5, mean_list5 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list5, noiseLevel_list5, day)
+plot_mean(hours_in_day, mean_list5, day)
+
+# seventh day
+day = "2020-02-07"
+dates_list6, noiseLevel_list6, mean_list6 = handle_data(date_col, noise_col, day)
+plot_graph(dates_list6, noiseLevel_list6, day)
+plot_mean(hours_in_day, mean_list6, day)
+
+# laying all graphs on top of each other
+fig, ax1 = plt.subplots()
+fig.set_figheight(7)
+fig.set_figwidth(15)
+
+ax1.plot(dates_list, noiseLevel_list, color='black', label='Day 1', linewidth=0.05)
+
+ax2 = ax1.twinx()
+ax2.plot(dates_list1, noiseLevel_list1, color='black', label='Day 2', linewidth=0.05)
+
+ax3 = ax1.twinx()
+ax3.plot(dates_list2, noiseLevel_list2, color='black', label='Day 3', linewidth=0.05)
+
+ax4 = ax1.twinx()
+ax4.plot(dates_list3, noiseLevel_list3, color='black', label='Day 4', linewidth=0.05)
+
+ax5 = ax1.twinx()
+ax5.plot(dates_list4, noiseLevel_list4, color='black', label='Day 5', linewidth=0.05)
+
+ax6 = ax1.twinx()
+ax6.plot(dates_list5, noiseLevel_list5, color='black', label='Day 6', linewidth=0.05)
+
+ax7 = ax1.twinx()
+ax7.plot(dates_list6, noiseLevel_list6, color='black', label='Day 7', linewidth=0.05)
+
+ax1.set_ylabel("Noise level (dB)", fontsize=18)
+ax2.set_axis_off()
+ax3.set_axis_off()
+ax4.set_axis_off()
+ax5.set_axis_off()
+ax6.set_axis_off()
+ax7.set_axis_off()
+plt.title(f"Noise levels (1 week)", fontweight='bold', fontsize=30)
+ax1.set_xlabel("Time (days)", fontsize=18)
+plt.show()
+
+# laying all mean graphs on top of each other
+fig, ax1 = plt.subplots()
+fig.set_figheight(7)
+fig.set_figwidth(15)
+
+ax1.plot(hours_in_day, mean_list, color='orange', label='Day 1')
+
+ax2 = ax1.twinx()
+ax2.plot(hours_in_day, mean_list1, color='blue', label='Day 2')
+
+ax3 = ax1.twinx()
+ax3.plot(hours_in_day, mean_list2, color='green', label='Day 3')
+
+ax4 = ax1.twinx()
+ax4.plot(hours_in_day, mean_list3, color='brown', label='Day 4')
+
+ax5 = ax1.twinx()
+ax5.plot(hours_in_day, mean_list4, color='red', label='Day 5')
+
+ax6 = ax1.twinx()
+ax6.plot(hours_in_day, mean_list5, color='purple', label='Day 6')
+
+ax7 = ax1.twinx()
+ax7.plot(hours_in_day, mean_list6, color='yellow', label='Day 7')
+
+ax1.set_ylabel("Noise level (dB)", fontsize=18)
+ax2.set_axis_off()
+ax3.set_axis_off()
+ax4.set_axis_off()
+ax5.set_axis_off()
+ax6.set_axis_off()
+ax7.set_axis_off()
+plt.title(f"Mean noise level for each day of the week", fontweight='bold', fontsize=30)
+ax1.set_xlabel("Time (hours)", fontsize=18)
+plt.xticks(list(range(0, 24)))
+
+lines = []
+labels = []
+for axis in fig.axes:
+    line, label = axis.get_legend_handles_labels()
+    lines.extend(line)
+    labels.extend(label)
+
+fig.legend(lines, labels, loc='right')
+ax1.set_ylim(25, 65)
+plt.show()
